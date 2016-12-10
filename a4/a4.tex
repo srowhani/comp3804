@@ -1,0 +1,223 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Christian's Assignment Latex Template
+%
+% Inspired by Simon Pratt's LatexTemplate (github.com/spratt/LatexTemplate)
+% Modified by Christian Delahousse (christian.delahousse.ca)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt]{article}
+
+
+\usepackage{styles/Assignment}
+\usepackage[shortlabels]{enumerate}
+
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{fancybox}
+\usepackage{graphicx}
+
+\newcommand{\IN}{\mathbb{N}}
+\newcommand{\IZ}{\mathbb{Z}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Assignment
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\CourseAndAssignmentName{COMP3804}{Assignment 4}
+\StudentNameAndNumber{Seena Rowhani}{100945353}
+
+\begin{document}
+%==================== QUESTION 1 - [x] ================
+
+\begin{question}
+    \begin{enumerate}[a)]
+        \item %a)
+        % http://code.activestate.com/recipes/119466-dijkstras-algorithm-for-shortest-paths/
+        \begin{algorithm}[H]
+            \caption{Minimal weight cycle in input graph, G, that contains an edge $E_{uv}$}
+            \begin{algorithmic}[1]
+                \Procedure{shortest\_cycle :: Input $\rightarrow$ (G = (V,E), $E_{uv}$)}{}
+                   \State let G' = $G - E_{uv}$ \Comment{Remove $E_{uv}$ from G}
+                   \State let P = Dijkstra(G') \Comment{Shortest path edges from $V_u \rightarrow V_v$ in G'}
+                   \If{dist[v] $\neq \infty$}
+                        \State \text{\bf return} $P \cup \{E_{uv}$\}
+                   \Else
+                        \State \text{\bf return} no cycle exists that contains $E_{uv}$
+                   \EndIf
+                \EndProcedure{}
+                
+                \Procedure{Dijkstra($G=(V,E)$)}{}
+                    \For{$V_u \in$ V}
+                        \State dist[$V_u$] = $\infty$
+                    \EndFor
+                    \State dist[s] = 0
+                    \State H = LinkedList(V)
+                    
+                    \While{H $\neq \emptyset$}
+                        \State $V_t$ = deletemin(H)
+                        \For{$\{V_u, V_v\} \in E$}
+                            \If{dist[$V_u$] + wt($V_u$, $V_v$) $<$ dist[$V_v$]}
+                                \State dist[$V_v$] = dist[$V_u$] + wt($V_u$, $V_v$)
+                                \State decreasekey(H, $V_v$)
+                            \EndIf
+                        \EndFor
+                    \EndWhile
+                \EndProcedure{}
+            \end{algorithmic}
+        \end{algorithm}
+        \item %b)
+            Remove edge $E_{uv}$ from $G$, and let that graph be denoted $G'$. There are only two possible cases that can occur, a path, $P$, exists from $u \rightarrow v$ in $G'$, or it doesn't. 
+            
+            In the case that P exists, that is to say that dist[v] $\neq \infty$, it would indicate that a cycle exists in $G$, as an alternate path from $u$ to $v$ exists besides $E_{uv}$. If DFS were to be performed on $G'$ starting from $u$, v would be marked $v$ as visited. Now if we were to add edge $E_{uv}$ back in and rerun DFS, $v$ would be both visited through P, and by $E_{uv}$; revisiting an already marked edge would indicate a cycle, as a back edge is present in $G$. $\therefore$ the algorithm will hold in the case that $P$ exists.
+            
+            If $P$ does \text{\bf not} exist, it would indicate that no cycles in $G$ exists; also implying that $G'$ is not connected. If $G'$ were to be connected, performing Dijkstra's on G' (line 3 of the pseudo-code) will return the shortest path achievable from one vertex to another. Dijkstra's will indicate that no path exists, and the algorithm will correctly return false.
+        \item
+            The running time of this algorithm is $O(|V|^2)$. The time complexity can be described in terms of the individual operations that occur in the algorithm.
+            
+            Creating a graph $G'$, where $E_{uv}$ is removed, iterating through the edge set and finding and removing that edge could take at most as many operations as the size of the edge set; which at worst case is of size $|V|^2$.
+            
+            Next Dijkstra's will be performed, implemented using a \textit{ Linked List} running operations \textbf{insert, decreasekey} will take constant time. As for finding and removing the minimum element using \textbf{deletemin}, this will take at most $|V|$ operations; seeing as you would have to potentially check all vertices before you find the suitable candidate. With a dense graph, the LinkedList implementation of Dijkstras will be the most efficient; as running time will be $O(|V|^2)$ as opposed to $O(|V|^2log(|V|)$.
+            
+            The rest of the operations in the algorhtm will happen in constant time: checking if $P$ exists, then either returning the union of two sets P and $\{E_{uv}\}$, or returning that no cycle had been found. In the following algebraic representation I will disregard these operations, for the sake of simplicity; as it does not reflect the growth of the algorithm.
+            
+            Let the size of the vertex set $V$ be denoted as $n$.
+            
+            \begin{align*}
+                T_n &= O(n^2) \\
+                n^2 &\leq cn^2
+            \end{align*}
+            
+            Let $c=1$, and $n_0 = 1$; it holds that $T_n = O(n^2)$ for all values of $n \geq n_0$ when $c=1$.
+            
+        
+    \end{enumerate}  
+\end{question}
+%==================== QUESTION 2 - [x] ================
+
+\begin{question}
+    \begin{enumerate}[a)]
+        \item
+            For any two arbitrary vertices, $u,v \in G$, stating that for the shortest path from $u \rightarrow v$, denoted as $S(u,v)$, is vertex disjoint to any other existing path from $V_u \rightarrow V_v$, denoted $P(u,v)$, is false.
+            
+            To say that something holds for any two arbitrary points, would also claim that is should hold for any pair of points in G.
+            Therefore, showing one instance of this problem as false, would make the claim altogether false.
+            
+            To illustrate this, begin with the graph contained by $K_4$.
+            \begin{center}
+                \includegraphics[scale=0.6]{assets/q2e1} \\
+                \textit{Figure 2.1 - Undirected graph with weighted edges.}
+            \end{center}
+            It can be seen that upon removing the edge $E_{uv}$, the graph is still 2-connected, but no path $P(u,v)$ will exist that is vertex disjoint to the shortest path, $S(u,v)$.        
+            
+            \begin{center}
+                \includegraphics[scale=0.6]{assets/q2e2} \\
+                \textit{Figure 2.2 - Alteration of graph Figure 2.1 without $E_{uv}$.}
+            \end{center}   
+            After removing $E_{uv}$ it becomes evident that the shortest path $S(u,v)$ will consume all vertices in $G$; as no edge with weight of infinity will be used. Since no vertices are left unmarked by S(u,v), $\therefore$ there \textbf{cannot} exist a path $P(u,v)$ vertex disjoint from path $S(u,v)$.
+            \begin{center}
+                \includegraphics[scale=0.6]{assets/q2e3} \\
+                \textit{Figure 2.3 - Figure 2.2 modified to visualize path taken by $S(u,v)$}
+            \end{center}
+    \end{enumerate}  
+\end{question}
+%==================== QUESTION 3 - [ ] ==================
+
+\begin{question}
+    \begin{enumerate}[a)]
+        \item
+            Every edge $e$, for where $T$ ($G$'s minimum spanning tree) intersects $H$ (a connected sub-graph of $G$) is guaranteed to be in the solution for an MST of $H$, $T'$.
+            
+            Now suppose an arbitrary edge, $e$, exists in T that is \textbf{not} in $T'$. If $e$ is not part of any minimum spanning tree, T’, of H thismeans that another edge, $v$, must exist such that $wt(v) < wt(u)$. This would contradict the fact that T is the MST of G.
+            
+           Lemma: \\ \text{\it The MST of a graph, G, is the union of the MST's of its connected components.}
+           
+           Take T, and remove an arbitrary edge $e$. Every edge in an MST will exhibit the property that upon removal, two connected components will form. Remove edge $e$ from T, and denote the two connected components as $C_1$, and $C_2$, each having it's own MST $T_1$, $T_2$. It be seen that performing a union on these two connected components, and taking it's MST will return $T$. Now take $H$ into consideration. $H$ is a connected-subgraph, aka connected component. Since G is connected, we know that H will span the rest of the elements in $G - H$.
+           
+           Thus there must be an edge of minimal weight connecting $H$ with $G - H$. Referring to the lemma we can see that performing a union of two connected components of G, and taking the $MST$ of $H \cup (G-H)$ will result in $T$. Thus showing that $T'$ of $H$ will have all edges wherever $T \cap H$; in other words every edge in $T \cap H$ will be in T'.
+    \end{enumerate}  
+\end{question}
+
+%====================QUESTION 4 - [ ] ===================
+\begin{question}
+    \begin{enumerate}[a)]
+        \item %a)
+        This problem, let it be denoted as the \text{\bf Weight Zero Cycle} problem, can be described as \text{\bf at least} as hard as the \text{\bf Subset Sum} problem.
+        
+        For context, the \text{\bf Subset Sum} problem is a decision problem that will take as input a set of integers, $S$, and will output yes or no depending on if an $S' \subseteq S$ exists that satisfies $\sum_{s \in S'}^{}s = 0$. This is a well known NP-Complete problem, and can be used to verify that the \text{\bf Weight Zero Cycle} problem is also NP-Complete using reduction.
+        
+        First it must be shown that our problem is in NP; this can be done by showing that the time complexity of verifying that an already proposed solution takes at least polynomial time. The solution in this case being a cycle, which has an edge weight sum of 0. To verify this solution is correct would take at least \text{\bf at least} $n$ operations, where $n$ is the size of the the clique. Therefore to verify the algorithm is correct will take at least polynomial time.
+        
+        I will refer to the subset sum problem as $Y$, and weight zero cycle as $X$. If it can be shown that $Y \leq pX$, then it confirms that $X$ is NP-Complete.
+        
+        A cycle can be thought of a subset of edges in G, though it's not just an arbitrary subset of any size. Never the less, when put in these terms, this problem is essentially the subset sum problem. The polynomial factor here being performing DFS to identify the cliques. If a back edge is encountered, a clique is identified. The running time of DFS is $O(|V| + |E|)$. Then to identify if a given subset of edges in this identified clique adds up to 0, where the problem essentially becomes at least as hard as the subset sum problem.
+        
+        To reiterate,
+        $$ Y \leq pX $$
+        \text{\bf Y} is the WeightZeroCycle problem. \\
+        \text{\bf X} is the SubsetSum problem. \\
+        \text{\bf p} is the time it takes to identify cliques. \\
+
+        It can be seen that the weight zero cycle problem is NP-complete.
+    \end{enumerate}  
+\end{question}
+
+%=============== QUESTION 5 [ ] ================
+\begin{question}
+    \begin{enumerate}[a)]
+        \item
+            The problem of finding the smallest killer set $K$ can be shown to be at least as hard as finding the minimal vertex cover a graph G. \\
+            
+            To show a problem as NP Complete, it has to be shown as both NP Hard, and in NP.
+            
+            This can be achieved by showing that the problem can be \text{\it verified} in polynomial time, and show that the problem can be reduced to some NP-Complete problem Y, s.t $Y \leq pX$.
+            
+            Given an instance of proposed solution to the killer set problem, it can be shown that the it takes polynomial time to verify the correctness of this solution.
+            
+            \text{\bf Proposed Solution} \\ \\
+            G = (V,E), C = \{$v_1, v_2 \dots v_n$\}, s.t $C \subseteq V$ \\ \\
+            \text{\bf Verification Algorithm}
+         
+            \begin{itemize}
+                \item 
+                    Iterate through $C$, let current element be $u$ - $O(|V|)$
+                \item Check $E$ it contains an undirected edge, $e$, s.t one of $e$'s endpoints is $u$. - $O(|V|)$.
+                \item Remove edge from $e$ from $E$
+                \item If the edge set is empty, after iteration, return true. If not, return false.
+            \end{itemize}
+            
+            The verification algorithm at worst will take $O(|V|)$, and we can proceed to determine if the Killer Set problem is in NP-Complete. \\
+            
+            \begin{center}
+                \includegraphics[scale=0.5]{assets/a4q5} \\
+                \textit{Figure 5.1 - Reduction Flow Chart}
+            \end{center}
+            
+            It is known that the the Minimum Vertex Cover problem is NP-Complete, showing the killer subset problem as at least as hard as Minimum Vertex Cover shows that it's also NP-Complete.
+            
+            Passing the input of our problem to minimal vertex cover is constant time, as they take the same input. But the process of removing edges from the graph to determine a successful vertex cover is at most the size of the vertex set; thus linear time complexity.
+            
+            Let $Y$ = Minimal Vertex Cover \\
+            Let $X$ = Killer Set Problem \\
+            Let $p$ = Time it takes to remove edges to verify if vertex cover is killer set.
+            
+            It holds that $Y \leq pX$.
+    \end{enumerate}
+    \begin{thebibliography}{3}
+        \bibitem{}
+            \text{\it http://seed.ucsd.edu/mediawiki/images/9/97/Lec6.pdf}
+        \bibitem{}
+            \text{\it http://orac.amt.edu.au/notes/GraphTheory2-Dec2009.pdf}
+        \bibitem{}
+            \text{\it http://www.cs.cmu.edu/afs/cs/academic/class/15750-s11/www/practice1s ln.pdf}
+        \bibitem{}
+            \text{\it http://techieme.in/further-reading-for-minimum-spanning-trees/}
+        \bibitem{}
+            \text{\it https://arxiv.org/pdf/1209.0700.pdf}
+    \end{thebibliography}
+\end{question}
+
+\end{document}
